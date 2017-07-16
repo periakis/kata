@@ -43,9 +43,7 @@ public class TripServiceTest {
 
 	@Test
 	public void should_not_return_any_trips_when_users_are_not_friends() throws Exception {
-		TripService tripService = new TripService();
-		
-		
+
 		User friend = new User();
 		friend.addFriend(ANOTHER_USER);
 		friend.addTrip(TO_BRAZIL);
@@ -58,7 +56,6 @@ public class TripServiceTest {
 	
 	@Test
 	public void should_return_friend_trips_when_users_are_friends() throws Exception {
-		TripService tripService = new TripService();
 		
 		User friend = new User();
 		friend.addFriend(ANOTHER_USER);
