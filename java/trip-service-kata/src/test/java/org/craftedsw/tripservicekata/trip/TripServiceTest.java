@@ -3,6 +3,7 @@ package org.craftedsw.tripservicekata.trip;
 import static org.craftedsw.tripservicekata.user.UserBuilder.aUser;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
+import static org.mockito.BDDMockito.given;
 
 import java.util.List;
 
@@ -12,7 +13,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class TripServiceTest {
@@ -24,21 +28,14 @@ public class TripServiceTest {
 	private static final Trip TO_BRAZIL = new Trip();
 	private static final Trip TO_LONDON = new Trip();
 	
-	private TripService tripService;
+	@Mock private TripDAO tripDao;
 	
-	@Before
-	public void initialise() {
-		tripService = new TestableTripService();
-	}
+	@InjectMocks @Spy private TripService realTripService = new TripService(); 
+	
 
 	@Test (expected=UserNotLoggedInException.class)
 	public void should_throw_an_exception_when_user_is_not_logged_in() throws Exception {
-		TripService tripService = new TripService();
-		
-		
-		tripService.getTripsByUser(UNUSED_USER, GUEST);
-		
-		
+		realTripService.getFriendTrips(UNUSED_USER, GUEST);
 	}
 
 	@Test
@@ -48,7 +45,7 @@ public class TripServiceTest {
 							.withTrips(TO_BRAZIL)
 							.build();
 		
-		List<Trip> friendTrips = tripService.getTripsByUser(friend, REGISTERD_USER);
+		List<Trip> friendTrips = realTripService.getFriendTrips(friend, REGISTERD_USER);
 
 		assertThat(friendTrips, is(0));
 	}
@@ -60,7 +57,9 @@ public class TripServiceTest {
 						.withTrips(TO_BRAZIL, TO_LONDON)
 						.build();
 		
-		List<Trip> friendTrips = tripService.getTripsByUser(friend, REGISTERD_USER);
+		given(tripDao.tripsBy(friend)).willReturn(friend.trips());
+		
+		List<Trip> friendTrips = realTripService.getFriendTrips(friend, REGISTERD_USER);
 		
 		assertThat(friendTrips, is(2));
 	}
@@ -101,14 +100,6 @@ public class TripServiceTest {
 			for (Trip trip : trips) {
 				user.addTrip(trip);
 			}
-		}
-	}
-	
-	private class TestableTripService extends TripService {
-		
-		@Override
-		protected List<Trip> tripsBy(User user) {
-			return user.trips();
 		}
 	}
 }
